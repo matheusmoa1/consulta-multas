@@ -197,17 +197,11 @@
       }
 
       const url = `https://lamprey-romantic-vaguely.ngrok-free.app/consultar_multa_condutor?cpf=${cpf}&data_inicio=${dataInicio}&data_fim=${dataFim}&uf=${uf}`;
-      const authHeader = "Basic " + btoa("admin:wesley_corno");
 
       resultadoDiv.innerHTML = "<p>Consultando, aguarde...</p>";
 
       try {
-        const response = await fetch(url, {
-          headers: {
-            "Authorization": authHeader
-          }
-        });
-
+        const response = await fetch(url);
         const data = await response.json();
 
         if (!data.success || !data.response || !data.response.infracoes || data.response.infracoes.length === 0) {
