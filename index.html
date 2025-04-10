@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consulta de Multas</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f1f1f1;
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      background: #fff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #222;
+      font-size: 1.8rem;
+    }
+
+    form label {
+      display: block;
+      margin-top: 15px;
+      font-weight: 600;
+    }
+
+    form input, form select, form button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      background-color: #fff;
+      color: #333;
+    }
+
+    form button {
+      background-color: #007bff;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      margin-top: 25px;
+    }
+
+    form button:hover {
+      background-color: #0056b3;
+    }
+
+    #resultado {
+      margin-top: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      background-color: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f8f8f8;
+      color: #333;
+    }
+
+    td {
+      background-color: #fff;
+    }
+
+    .btn-ver {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-ver:hover {
+      background-color: #218838;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 30px 20px;
+      }
+
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      tr {
+        margin-bottom: 15px;
+        border-bottom: 2px solid #ccc;
+      }
+
+      td {
+        text-align: right;
+        position: relative;
+        padding-left: 50%;
+      }
+
+      td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        font-weight: bold;
+        text-align: left;
+        color: #666;
+      }
+
+      th {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Consulta de Infrações de Trânsito</h1>
+    <form id="formulario">
+      <label for="cpf">CPF:</label>
+      <input type="text" id="cpf" placeholder="Digite o CPF" required>
+
+      <label for="data_inicio">Data Início:</label>
+      <input type="date" id="data_inicio" required>
+
+      <label for="data_fim">Data Fim:</label>
+      <input type="date" id="data_fim" required>
+
+      <label for="uf">UF:</label>
+      <select id="uf" required>
+        <option value="">Selecione o estado</option>
+        <option value="AC">AC</option><option value="AL">AL</option><option value="AP">AP</option>
+        <option value="AM">AM</option><option value="BA">BA</option><option value="CE">CE</option>
+        <option value="DF">DF</option><option value="ES">ES</option><option value="GO">GO</option>
+        <option value="MA">MA</option><option value="MT">MT</option><option value="MS">MS</option>
+        <option value="MG">MG</option><option value="PA">PA</option><option value="PB">PB</option>
+        <option value="PR">PR</option><option value="PE">PE</option><option value="PI">PI</option>
+        <option value="RJ">RJ</option><option value="RN">RN</option><option value="RS">RS</option>
+        <option value="RO">RO</option><option value="RR">RR</option><option value="SC">SC</option>
+        <option value="SP">SP</option><option value="SE">SE</option><option value="TO">TO</option>
+      </select>
+
+      <button type="submit">Consultar</button>
+    </form>
+    <div id="resultado"></div>
+  </div>
+
+  <script>
+    document.getElementById("formulario").addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const cpf = document.getElementById("cpf").value.trim();
+      const dataInicio = formatarDataAPI(document.getElementById("data_inicio").value);
+      const dataFim = formatarDataAPI(document.getElementById("data_fim").value);
+      const uf = document.getElementById("uf").value.toLowerCase();
+      const resultadoDiv = document.getElementById("resultado");
+
+      if (!cpf || !dataInicio || !dataFim || !uf) {
+        resultadoDiv.innerHTML = "<p>Preencha todos os campos corretamente.</p>";
+        return;
+      }
+
+      const url = `https://lamprey-romantic-vaguely.ngrok-free.app/consultar_multa_condutor?cpf=${cpf}&data_inicio=${dataInicio}&data_fim=${dataFim}&uf=${uf}`;
+      const authHeader = "Basic " + btoa("admin:wesley_corno");
+
+      resultadoDiv.innerHTML = "<p>Consultando, aguarde...</p>";
+
+      try {
+        const response = await fetch(url, {
+          headers: {
+            "Authorization": authHeader
+          }
+        });
+
+        const data = await response.json();
+
+        if (!data.success || !data.response || !data.response.infracoes || data.response.infracoes.length === 0) {
+          resultadoDiv.innerHTML = "<p>Nenhuma infração encontrada.</p>";
+          return;
+        }
+
+        const infracoes = data.response.infracoes;
+
+        let html = `
+          <h2>Infrações Encontradas (${infracoes.length})</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Cód. Infração</th>
+                <th>Órgão Autuador</th>
+                <th>Data</th>
+                <th>Auto de Infração</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        infracoes.forEach(inf => {
+          html += `
+            <tr>
+              <td data-label="Cód. Infracao">${inf.codigo_infracao}</td>
+              <td data-label="Órgão Autuador">${inf.codigo_orgao_autuador}</td>
+              <td data-label="Data">${formatarDataVisual(inf.data_infracao)}</td>
+              <td data-label="Auto de Infração">${inf.numero_auto_infracao}</td>
+            </tr>
+          `;
+        });
+
+        html += `</tbody></table>`;
+        resultadoDiv.innerHTML = html;
+
+      } catch (err) {
+        console.error(err);
+        resultadoDiv.innerHTML = "<p>Erro ao consultar a API. Verifique os dados e tente novamente.</p>";
+      }
+    });
+
+    function formatarDataAPI(dataISO) {
+      if (!dataISO) return "";
+      const [ano, mes, dia] = dataISO.split("-");
+      return `${dia}-${mes}-${ano}`;
+    }
+
+    function formatarDataVisual(dataStr) {
+      if (dataStr.length !== 6) return dataStr;
+      const ano = "20" + dataStr.slice(0, 2);
+      const mes = dataStr.slice(2, 4);
+      const dia = dataStr.slice(4, 6);
+      return `${dia}/${mes}/${ano}`;
+    }
+  </script>
+</body>
+</html>
